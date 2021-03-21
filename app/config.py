@@ -4,7 +4,8 @@ app_dir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BaseConfig:
-    # SITE = '/bill18/api/v1'
+    JSON_AS_ASCII = False
+    SITE = ''  # '/bill18/api/v1'
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'A SECRET KEY'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -19,14 +20,17 @@ class BaseConfig:
 
 class DevelopementConfig(BaseConfig):
     DEBUG = True
-    DATABASE_URI = os.environ.get('DEVELOPMENT_DATABASE_URI') or 'sqlserver://sa:123@localhost:1433?database=kr1'
+    DATABASE_URI = (os.environ.get('DEVELOPMENT_DATABASE_URI') or
+                    "DRIVER={SQL Server};SERVER=localhost;DATABASE=kr1;UID=sa;PWD=123")
 
 
 class TestingConfig(BaseConfig):
     DEBUG = True
-    DATABASE_URI = os.environ.get('TESTING_DATABASE_URI') or 'sqlserver://sa:123@localhost:1433?database=kr1'
+    DATABASE_URI = (os.environ.get('TESTING_DATABASE_URI') or
+                    'DRIVER={SQL Server};SERVER=localhost;DATABASE=kr1;UID=sa;PWD=123')
 
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
-    DATABASE_URI = os.environ.get('PRODUCTION_DATABASE_URI') or 'sqlserver://sa:dnypr1@192.168.5.111:1433?database=komp'
+    DATABASE_URI = (os.environ.get('PRODUCTION_DATABASE_URI') or
+                    'DRIVER={SQL Server};SERVER=localhost;DATABASE=komp;UID=sa;PWD=dnypr1')

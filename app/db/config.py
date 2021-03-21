@@ -2,6 +2,7 @@
 Файл с настройками доступа
 и создание соединения с SQL Server
 """
+from flask import g
 import pyodbc
 # ===============================================
 driver = '{SQL Server}'
@@ -23,3 +24,10 @@ def get_connection():
         print("\nError connection: ", ex)
         print(f"connectionString: {connectionString}")
     return conn
+
+
+def get_db():
+    """Соединение с БД, если оно еще не установлено"""
+    if not hasattr(g, 'link_db'):
+        g.link_db = get_connection()
+    return g.link_db

@@ -1,10 +1,30 @@
-import time
 from datetime import datetime
 from app import app
-from app.db import config as db
-from app.db import query
+from flask import g
+from FDataBase import FDataBase
+import pyodbc
 import utils
-SITE = '/bill18/api/v1'
+
+SITE = app.config['SITE']
+app.json_encoder = utils.MyJSONEncoder
+
+
+def connect_db():
+    """Создаем соединение к БД"""
+    conn = None
+    try:
+        conn = pyodbc.connect(app.config['DATABASE_URI'], timeout=5)
+    except Exception as ex:
+        print("\nError connection: ", ex)
+        print(f"DATABASE_URI: {app.config['DATABASE_URI']}")
+    return conn
+
+
+def get_db():
+    """Соединение с БД, если оно еще не установлено"""
+    if not hasattr(g, 'link_db'):
+        g.link_db = connect_db()
+    return g.link_db
 
 
 @app.route(SITE + '/')
@@ -12,55 +32,96 @@ def home():
     return "<h1>API - сервис по приборам учёта</h1>"
 
 
+@app.teardown_appcontext
+def close_db(error):
+    """Закрываем соединение с БД, если оно было установлено"""
+    if hasattr(g, 'link_db'):
+        g.link_db.close()
+
+
 @app.route(SITE + '/status')
 def status():
     dt_now = datetime.now()
     return {
         'status': True,
-        'time1': time.asctime(),
-        'time2': dt_now.strftime('%d.%m.%Y time: %H:%M:%S'),
-        'time3': dt_now.isoformat()
+        'time': dt_now.strftime('%d.%m.%Y %H:%M:%S'),
     }
 
 
 @app.route(SITE + '/streets')
 def get_streets():
-    conn = db.get_connection()
-    data = query.get_streets(conn)
-    conn.close()
-    return data
+    """Возвращаем список улиц"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_streets()
 
 
 @app.route(SITE + '/builds/<street_name>')
 def get_builds(street_name):
-    conn = db.get_connection()
-    data = query.get_builds(conn, street_name)
-    conn.close()
-    return data
+    """Возвращаем список домов по заданной улице"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_builds(street_name)
 
 
 @app.route(SITE + '/flats/<street_name>/<nom_dom>')
 def get_flats(street_name, nom_dom):
-    conn = db.get_connection()
-    data = query.get_flats(conn, street_name, nom_dom)
-    conn.close()
-    return data
+    """Возвращаем список помещений по заданному дому"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_flats(street_name, nom_dom)
 
 
 @app.route(SITE + '/lics/<street_name>/<nom_dom>/<nom_kvr>')
 def get_lics(street_name, nom_dom, nom_kvr):
-    conn = db.get_connection()
-    data = query.get_lics(conn, street_name, nom_dom, nom_kvr)
-    conn.close()
-    return data
+    """Возвращаем список лицевых в помещении"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_lics(street_name, nom_dom, nom_kvr)
 
 
 @app.route(SITE + '/lic/<int:lic>')
 def get_occ(lic):
-    conn = db.get_connection()
-    data = query.get_occ(conn, lic)
-    conn.close()
-    return data
+    """Возвращаем информацию по заданному лицевому счету"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_occ(lic)
+
+
+@app.route(SITE + '/infoDataCounter/<int:lic>')
+def get_pu(lic):
+    """Возвращаем список приборов учета по заданному лицевому счету"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_counters(lic)
+
+
+@app.route(SITE + '/infoDataCounterValue/<int:lic>')
+def get_ppu(lic):
+    """Возвращаем список показаний приборов учета по заданному лицевому счету"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_counter_values(lic)
+
+
+@app.route(SITE + '/infoDataValue/<int:lic>')
+def get_values(lic):
+    """Возвращаем список начислений по заданному лицевому счету"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_values(lic)
+
+
+@app.route(SITE + '/infoDataPaym/<int:lic>')
+def get_payments(lic):
+    """Возвращаем список платежей по заданному лицевому счету"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.get_payments(lic)
 
 # TODO сделать добавление ППУ
+# /puAddValue/<int:pu>/<float:value>
+
 # TODO сделать удаление ППУ
+# /puDelValue/<int:pu>/<int:id_value>
+
