@@ -119,9 +119,18 @@ def get_payments(lic):
     dbase = FDataBase(db)
     return dbase.get_payments(lic)
 
-# TODO сделать добавление ППУ
-# /puAddValue/<int:pu>/<float:value>
 
-# TODO сделать удаление ППУ
-# /puDelValue/<int:pu>/<int:id_value>
+@app.route(SITE + '/puAddValue/<int:pu_id>/<float:value>')
+def pu_add_value(pu_id, value):
+    """Добавление ППУ"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.pu_add_value(pu_id, value)
 
+
+@app.route(SITE + '/puDelValue/<int:pu_id>/<int:id_value>')
+def pu_del_value(pu_id, id_value):
+    """Удаление ППУ"""
+    db = get_db()
+    dbase = FDataBase(db)
+    return dbase.pu_del_value(pu_id, id_value)

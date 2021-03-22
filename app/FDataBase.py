@@ -97,20 +97,20 @@ class FDataBase:
                 data = {
                     "lic": occ,
                     "dataOcc": dict(zip(cols, row)),
-                    "dataCounter": self.get_counters(occ),
-                    "dataCounterValue": self.get_counter_values(occ)
                 }
+                data.update(self.get_counters(occ))  # добавляем в словарь другой словарь
+                data.update(self.get_counter_values(occ))
+
         except Exception as ex:
             print("Exception:", ex)
         return data
 
-    def get_counter_values(self, occ):
+    def get_counter_values(self, occ, kolval=6):
         """
         Получение списка показаний приборов учета по лицевому счету
         Выход: JSON - объект
         """
         sql = "exec ws_show_counters_value @occ=?, @row1=?"
-        kolval = 6
         params = (occ, kolval)
         data = {}
         try:
@@ -150,7 +150,7 @@ class FDataBase:
         Получение начислений по лицевому счету
         Выход: JSON - объект
         """
-        sql = "exec ws_show_values @occ=?"
+        sql = "exec ws_show_values_occ @occ=?"
         params = occ
         data = {}
         try:
@@ -170,7 +170,7 @@ class FDataBase:
         Получение платежей по лицевому счету
         Выход: JSON - объект
         """
-        sql = "exec ws_show_payments @occ=?"
+        sql = "exec ws_show_payings @occ=?"
         params = occ
         data = {}
         try:
@@ -184,3 +184,50 @@ class FDataBase:
         except Exception as ex:
             print("Exception:", ex)
         return data
+
+    def pu_add_value(self, pu_id, value):
+        """
+        Добавление показания ПУ
+        :param pu_id:
+        :param value:
+        :return:
+        """
+        sql = """declare @result_add BIT, @strerror VARCHAR(4000), @id_new INT;
+        exec k_counter_value_add2 @counter_id1=?, @inspector_value1=?, 
+            @result_add=@result_add OUTPUT, @strerror=@strerror OUTPUT, @id_new=@id_new OUTPUT;
+        select @result_add, @strerror, @id_new;"""
+        params = (pu_id, value)
+        result = {'result': False, 'strerror': '', 'id_new': 0}
+        try:
+            self.__cur.execute(sql, params)
+            rows = self.__cur.fetchone()
+            result['result'] = bool(rows[0])
+            result['strerror'] = rows[1]
+            result['id_new'] = int(rows[2])
+            self.__db.commit()
+        except Exception as ex:
+            print("Exception:", ex)
+        return result
+
+    def pu_del_value(self, pu_id, id_value):
+        """
+        Удаление показания ПУ
+        :param pu_id:
+        :param id_value:
+        :return:
+        """
+        sql = """declare @result_add BIT, @strerror VARCHAR(4000);
+        exec k_counter_value_del @counter_id1=?, @id1=?,
+            @result_add=@result_add OUTPUT, @strerror=@strerror OUTPUT;
+        select @result_add, @strerror;"""
+        params = (pu_id, id_value)
+        result = {'result': False, 'strerror': ''}
+        try:
+            self.__cur.execute(sql, params)
+            rows = self.__cur.fetchone()
+            result['result'] = bool(rows[0])
+            result['strerror'] = rows[1]
+            self.__db.commit()
+        except Exception as ex:
+            print("Exception:", ex)
+        return result
