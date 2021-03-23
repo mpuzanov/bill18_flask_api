@@ -120,6 +120,7 @@ def get_payments(lic):
     return dbase.get_payments(lic)
 
 
+@app.route(SITE + '/puAddValue/<int:pu_id>/<int:value>')
 @app.route(SITE + '/puAddValue/<int:pu_id>/<float:value>')
 def pu_add_value(pu_id, value):
     """Добавление ППУ"""
