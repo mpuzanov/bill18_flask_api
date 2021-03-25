@@ -20,17 +20,18 @@ class BaseConfig:
 
 class DevelopementConfig(BaseConfig):
     DEBUG = True
-    DATABASE_URI = (os.environ.get('DEVELOPMENT_DATABASE_URI') or
+    SECRET_KEY = "SUPER SECRET KEY"
+    DATABASE_URI = (os.environ.get('DATABASE_URI') or
                     "DRIVER={SQL Server};SERVER=localhost;DATABASE=kr1;UID=sa;PWD=123")
 
 
 class TestingConfig(BaseConfig):
     DEBUG = True
-    DATABASE_URI = (os.environ.get('TESTING_DATABASE_URI') or
+    DATABASE_URI = (os.environ.get('DATABASE_URI') or
                     'DRIVER={SQL Server};SERVER=localhost;DATABASE=kr1;UID=sa;PWD=123')
 
 
 class ProductionConfig(BaseConfig):
     DEBUG = False
-    DATABASE_URI = (os.environ.get('PRODUCTION_DATABASE_URI') or
+    DATABASE_URI = (os.environ.get('DATABASE_URI') or
                     'DRIVER={SQL Server};SERVER=localhost;DATABASE=komp;UID=sa;PWD=dnypr1')
