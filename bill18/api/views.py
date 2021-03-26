@@ -1,5 +1,5 @@
 from . import api
-from app.db import get_dbase
+from bill18.db import get_dbase
 
 
 @api.route('/streets')

@@ -2,7 +2,7 @@
 # from dotenv import load_dotenv
 # from flask_script import Manager
 
-from app import create_app
+from bill18 import create_app
 
 
 # dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -11,8 +11,8 @@ from app import create_app
 
 
 app = create_app('flask.cfg')
-# from .app import views
-# manager = Manager(app)
+# from .bill18 import views
+# manager = Manager(bill18)
 
 
 if __name__ == '__main__':

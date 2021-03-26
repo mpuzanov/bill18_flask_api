@@ -6,10 +6,10 @@ from .utils import MyJSONEncoder
 def create_app(config_filename=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config_filename)
-    # app.config.from_object(os.environ.get('FLASK_ENV') or 'config.DevelopementConfig')
+    # bill18.config.from_object(os.environ.get('FLASK_ENV') or 'config.DevelopementConfig')
     app.json_encoder = MyJSONEncoder
 
-    from app import db
+    from bill18 import db
     db.init_app(app)
 
     from .main import main as main_blueprint

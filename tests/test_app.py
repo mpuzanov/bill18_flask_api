@@ -1,4 +1,4 @@
-from app import create_app
+from bill18 import create_app
 
 
 class TestApi:
