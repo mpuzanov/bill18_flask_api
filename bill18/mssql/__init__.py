@@ -1,3 +1,11 @@
+import pyodbc
+from flask import current_app
+
+
+def connect_db(db_uri):
+    """Connect to mssql"""
+    return pyodbc.connect(db_uri)
+
 
 class FDataBase:
     def __init__(self, db):
@@ -19,7 +27,8 @@ class FDataBase:
             for item in rows:
                 data["dataStreets"].append(dict(zip(cols, item)))
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_streets with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_builds(self, street_name):
@@ -38,7 +47,8 @@ class FDataBase:
             for item in rows:
                 data["dataBuilds"].append(dict(zip(cols, item)))
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_builds with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_flats(self, street_name, nom_dom):
@@ -57,7 +67,8 @@ class FDataBase:
             for item in rows:
                 data["dataKvr"].append(dict(zip(cols, item)))
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_flats with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_lics(self, street_name, nom_dom, nom_kvr):
@@ -76,7 +87,8 @@ class FDataBase:
             for item in rows:
                 data["dataKvrLic"].append(dict(zip(cols, item)))
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_lics with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_occ(self, occ):
@@ -102,7 +114,8 @@ class FDataBase:
                 data.update(self.get_counter_values(occ))
 
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_occ with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_counter_values(self, occ, kolval=6):
@@ -122,7 +135,8 @@ class FDataBase:
                 data["dataCounterValue"].append(dict(zip(cols, item)))
 
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_counter_values with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_counters(self, occ):
@@ -142,7 +156,8 @@ class FDataBase:
                 data["dataCounter"].append(dict(zip(cols, item)))
 
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_counters with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_values(self, occ):
@@ -162,7 +177,8 @@ class FDataBase:
                 data["dataValue"].append(dict(zip(cols, item)))
 
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_values with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def get_payments(self, occ):
@@ -182,7 +198,8 @@ class FDataBase:
                 data["dataPaym"].append(dict(zip(cols, item)))
 
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'get_payments with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return data
 
     def pu_add_value(self, pu_id, value):
@@ -206,7 +223,8 @@ class FDataBase:
             result['id_new'] = int(rows[2])
             self.__db.commit()
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'pu_add_value with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return result
 
     def pu_del_value(self, pu_id, id_value):
@@ -229,6 +247,6 @@ class FDataBase:
             result['strerror'] = rows[1]
             self.__db.commit()
         except Exception as ex:
-            print("Exception:", ex)
+            current_app.logger.warning(f'pu_del_value with errors: {ex}')
+            return {"message:", str(ex)}, 400
         return result
-

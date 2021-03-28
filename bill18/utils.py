@@ -1,28 +1,18 @@
-"""
-
-"""
-from datetime import date, datetime
-from decimal import Decimal
-import flask
-
-
-class MyJSONEncoder(flask.json.JSONEncoder):
-    """JSON serializer for objects not serializable by default json code"""
-    def default(self, obj):
-        if isinstance(obj, (datetime, date)):
-            return obj.isoformat()
-        if isinstance(obj, Decimal):
-            return float(obj)
-        # if isinstance(obj, Decimal):
-        #     return str(obj)
-        return super(MyJSONEncoder, self).default(obj)
+from . import mail
+from flask import render_template
+from threading import Thread
+from bill18 import create_app
+from flask_mail import Message
 
 
-def json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
+def async_send_mail(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError("Type %s not serializable" % type(obj))
+
+def send_mail(subject, recipient, template, **kwargs):
+    msg = Message(subject, sender=create_app.config['MAIL_DEFAULT_SENDER'], recipients=[recipient])
+    msg.html = render_template(template, **kwargs)
+    thrd = Thread(target=async_send_mail, args=[create_app, msg])
+    thrd.start()
+    return thrd

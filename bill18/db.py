@@ -1,9 +1,8 @@
-import pyodbc
 import click
 from flask import current_app
 from flask import g
 from flask.cli import with_appcontext
-from .FDataBase import FDataBase
+from .mssql import FDataBase, connect_db
 
 
 def get_dbase():
@@ -16,7 +15,7 @@ def get_db():
     again.
     """
     if "db" not in g:
-        g.db = pyodbc.connect(current_app.config['DATABASE_URI'])
+        g.db = connect_db(current_app.config['DATABASE_URI'])
         print("Создаем соединение к БД")
     return g.db
 
