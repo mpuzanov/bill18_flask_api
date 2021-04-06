@@ -17,13 +17,12 @@ class FDataBase:
         Получение списка улиц
         Выход: JSON - объект
         """
-        data = None
+        data = {"dataStreets": []}
         sql = "EXEC ws_streets"
         try:
             self.__cur.execute(sql)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data = {"dataStreets": []}
             for item in rows:
                 data["dataStreets"].append(dict(zip(cols, item)))
         except Exception as ex:
@@ -38,12 +37,11 @@ class FDataBase:
         """
         sql = "EXEC ws_builds @street_name1=?"
         params = street_name
-        data = None
+        data = {"street_name": street_name, "dataBuilds": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data = {"street_name": street_name, "dataBuilds": []}
             for item in rows:
                 data["dataBuilds"].append(dict(zip(cols, item)))
         except Exception as ex:
@@ -58,12 +56,11 @@ class FDataBase:
         """
         sql = "EXEC ws_flats @street_name1=?, @nom_dom1=?"
         params = (street_name, nom_dom)
-        data = None
+        data = {"street_name": street_name, "nom_dom": nom_dom, "dataKvr": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data = {"street_name": street_name, "nom_dom": nom_dom, "dataKvr": []}
             for item in rows:
                 data["dataKvr"].append(dict(zip(cols, item)))
         except Exception as ex:
@@ -78,12 +75,11 @@ class FDataBase:
         """
         query = "EXEC ws_occ_address @street_name1=?, @nom_dom1=?, @nom_kvr1=?"
         params = (street_name, nom_dom, nom_kvr)
-        data = None
+        data = {"street_name": street_name, "nom_dom": nom_dom, "nom_kvr": nom_kvr, "dataKvrLic": []}
         try:
             self.__cur.execute(query, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data = {"street_name": street_name, "nom_dom": nom_dom, "nom_kvr": nom_kvr, "dataKvrLic": []}
             for item in rows:
                 data["dataKvrLic"].append(dict(zip(cols, item)))
         except Exception as ex:
@@ -98,13 +94,11 @@ class FDataBase:
         """
         sql = "EXEC ws_show_occ @occ=?"
         params = occ
-        data = None
+        data = {"lic": occ, "dataOcc": {}}
         try:
             self.__cur.execute(sql, params)
             row = self.__cur.fetchone()
-            if not row:
-                data = {"lic": occ, "dataOcc": {}}
-            else:
+            if row:
                 cols = [i[0] for i in self.__cur.description]
                 data = {
                     "lic": occ,
@@ -125,12 +119,11 @@ class FDataBase:
         """
         sql = "exec ws_show_counters_value @occ=?, @row1=?"
         params = (occ, kolval)
-        data = {}
+        data = {"dataCounterValue": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data["dataCounterValue"] = []
             for item in rows:
                 data["dataCounterValue"].append(dict(zip(cols, item)))
 
@@ -146,12 +139,11 @@ class FDataBase:
         """
         sql = "exec ws_show_counters @occ=?"
         params = occ
-        data = {}
+        data = {"dataCounter": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data["dataCounter"] = []
             for item in rows:
                 data["dataCounter"].append(dict(zip(cols, item)))
 
@@ -167,12 +159,11 @@ class FDataBase:
         """
         sql = "exec ws_show_values_occ @occ=?"
         params = occ
-        data = {}
+        data = {"dataValue": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data["dataValue"] = []
             for item in rows:
                 data["dataValue"].append(dict(zip(cols, item)))
 
@@ -188,12 +179,11 @@ class FDataBase:
         """
         sql = "exec ws_show_payings @occ=?"
         params = occ
-        data = {}
+        data = {"dataPaym": []}
         try:
             self.__cur.execute(sql, params)
             rows = self.__cur.fetchall()
             cols = [i[0] for i in self.__cur.description]
-            data["dataPaym"] = []
             for item in rows:
                 data["dataPaym"].append(dict(zip(cols, item)))
 
@@ -222,9 +212,11 @@ class FDataBase:
             result['strerror'] = rows[1]
             result['id_new'] = int(rows[2])
             self.__db.commit()
+            current_app.logger.debug(result)
         except Exception as ex:
             current_app.logger.warning(f'pu_add_value with errors: {ex}')
-            return {"message:", str(ex)}, 400
+            result['strerror'] = str(ex)
+            return result, 400
         return result
 
     def pu_del_value(self, pu_id, id_value):
@@ -246,7 +238,9 @@ class FDataBase:
             result['result'] = bool(rows[0])
             result['strerror'] = rows[1]
             self.__db.commit()
+            current_app.logger.debug(result)
         except Exception as ex:
             current_app.logger.warning(f'pu_del_value with errors: {ex}')
-            return {"message:", str(ex)}, 400
+            result['strerror'] = str(ex)
+            return result, 400
         return result
