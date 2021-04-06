@@ -1,29 +1,27 @@
 import os
 from dotenv import load_dotenv
-# from flask_script import Manager
-import logging
-import sys
-
+from bill18 import log
 from bill18 import create_app
+
+# from flask_script import Manager
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 app = create_app(os.environ.get('FLASK_ENV') or 'config.DevelopementConfig')  # create_app('flask.cfg')
-# print(app.config)
 
+
+# print(app.config)
 # manager = Manager(bill18)
 
 
 @app.before_first_request
 def setup_logging():
-
     if not app.debug:
-        # In production mode, add log handler to sys.stdout.
-        app.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
-        app.logger.setLevel(logging.INFO)
+        app.logger.addHandler(log.get_mail_handler())
+        app.logger.addHandler(log.get_rotating_file_handler())
     else:
-        app.logger.setLevel(logging.DEBUG)
+        app.logger.addHandler(log.get_file_handler())
 
 
 if __name__ == '__main__':

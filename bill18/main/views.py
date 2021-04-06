@@ -1,13 +1,13 @@
 from datetime import datetime
-from flask import session, flash, current_app
-from bill18.utils import send_mail
+from flask import session, current_app
+from bill18.mail import send_mail, send_email
 from . import main
 
 
 @main.route('/')
 @main.route('/index')
 def index():
-    print("index")
+    current_app.logger.debug('/index')
     if 'visits' in session:
         session['visits'] = session.get('visits') + 1  # обновление данных сессии
     else:
@@ -17,19 +17,33 @@ def index():
 
 @main.route('/status')
 def status():
-    print("status")
-    dt_now = datetime.now()
     return {
         'status': True,
-        'time': dt_now.strftime('%d.%m.%Y %H:%M:%S'),
+        'time': datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
     }
 
 
-@main.route('/contact/', methods=['get', 'post'])
+@main.route('/contact', methods=['get'])
+# @main.route('/contact', methods=['post'])
 def contact():
-    name = ''
-    email = ''
-    send_mail("New Feedback", current_app.config['MAIL_DEFAULT_SENDER'], 'mail/feedback.html',
-              name=name, email=email)
-    flash("Message Received", "success")
-    return True
+    current_app.logger.debug('/contact')
+    recipients = ['puzanovma@yandex.ru']
+    # send_email("welcome", recipients=recipients, text_body='Welcome')
+    send_mail("welcome", recipients=recipients, text_body='Welcome from API bill18')
+    # send_email('[bill18] welcome',
+    #            sender=current_app.config['ADMINS'][0],
+    #            recipients=[email],
+    #            text_body=render_template('email/welcome.txt',
+    #                                      username=username),
+    #            html_body=render_template('email/welcome.html',
+    #                                      username=username))
+
+    # send_mail('[bill18] welcome',
+    #           recipient=[email],
+    #           template='email/welcome.html',
+    #           username=username)
+
+    return {
+        'send_mail': True,
+        'time': datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+    }
